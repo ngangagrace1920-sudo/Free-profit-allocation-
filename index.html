@@ -4,135 +4,217 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Free Profit Allocation</title>
+
 <style>
-body {
-    font-family:Segoe UI, sans-serif;
-    background:#0f172a;
-    color:white;
-    padding:15px;
+body{
+font-family:Segoe UI, sans-serif;
+background:#0f172a;
+color:white;
+padding:15px;
 }
-.card {
-    background:rgba(255,255,255,0.05);
-    padding:18px;
-    border-radius:18px;
-    margin-bottom:18px;
+
+.card{
+background:rgba(255,255,255,0.05);
+padding:18px;
+border-radius:18px;
+margin-bottom:18px;
 }
-input, button {
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    border-radius:12px;
-    border:none;
-    font-size:15px;
+
+input,button,select{
+width:100%;
+padding:12px;
+margin-top:10px;
+border-radius:12px;
+border:none;
+font-size:15px;
 }
-button {
-    background:#0b5ed7;
-    color:white;
-    font-weight:bold;
-    cursor:pointer;
+
+button{
+background:#0b5ed7;
+color:white;
+font-weight:bold;
+cursor:pointer;
 }
-table {
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px;
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
 }
-th, td {
-    border:1px solid white;
-    padding:8px;
-    text-align:center;
+
+th,td{
+border:1px solid white;
+padding:8px;
+text-align:center;
 }
 </style>
 </head>
+
 <body>
 
 <div class="card">
+
 <h2>Free Profit Allocation</h2>
+
+<select id="currency">
+<option value="KES">KES - Kenyan Shilling</option>
+<option value="$">USD - US Dollar</option>
+<option value="€">EUR - Euro</option>
+<option value="£">GBP - Pound</option>
+<option value="₹">INR - Rupee</option>
+</select>
+
 <input type="date" id="date">
 <input type="number" id="sales" placeholder="Sales amount">
 <input type="number" id="expenses" placeholder="Expenditure amount">
+
 <button onclick="addRecord()">Add Record</button>
+
 </div>
 
 <div class="card">
+
 <h3>All Records</h3>
+
 <table id="recordsTable">
+
 <thead>
 <tr>
 <th>Date</th>
+<th>Currency</th>
 <th>Sales</th>
 <th>Expenditure</th>
 <th>Profit</th>
 <th>Delete</th>
 </tr>
 </thead>
+
 <tbody></tbody>
+
 </table>
+
 </div>
 
 <div class="card">
+
 <h3>Total Calculation</h3>
+
 <p id="totals">Sales: 0 | Expenditure: 0 | Profit: 0</p>
+
 </div>
 
 <script>
+
 let records = JSON.parse(localStorage.getItem("free_profit_allocation")) || [];
 
-function saveLocal() {
-    localStorage.setItem("free_profit_allocation", JSON.stringify(records));
+/* SAVE TO PHONE STORAGE */
+
+function saveLocal(){
+
+localStorage.setItem(
+"free_profit_allocation",
+JSON.stringify(records)
+);
+
 }
 
-function addRecord() {
-    let date = document.getElementById("date").value;
-    let sales = Number(document.getElementById("sales").value);
-    let expenses = Number(document.getElementById("expenses").value);
-    if(!date) return alert("Enter a date");
-    if(isNaN(sales)) sales = 0;
-    if(isNaN(expenses)) expenses = 0;
+/* ADD RECORD */
 
-    records.push({date, sales, expenses, profit: sales - expenses});
-    saveLocal();
-    renderRecords();
+function addRecord(){
 
-    // Clear inputs
-    document.getElementById("date").value = "";
-    document.getElementById("sales").value = "";
-    document.getElementById("expenses").value = "";
-}
+let date=document.getElementById("date").value;
+let sales=Number(document.getElementById("sales").value);
+let expenses=Number(document.getElementById("expenses").value);
+let currency=document.getElementById("currency").value;
 
-function deleteRecord(index) {
-    if(!confirm("Delete this record?")) return;
-    records.splice(index, 1);
-    saveLocal();
-    renderRecords();
-}
+if(!date) return alert("Enter a date");
 
-function renderRecords() {
-    let tbody = document.querySelector("#recordsTable tbody");
-    tbody.innerHTML = "";
-    let totalSales = 0, totalExpenses = 0, totalProfit = 0;
+if(isNaN(sales)) sales=0;
+if(isNaN(expenses)) expenses=0;
 
-    records.forEach((r, i) => {
-        totalSales += r.sales;
-        totalExpenses += r.expenses;
-        totalProfit += r.profit;
+let profit=sales-expenses;
 
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${r.date}</td>
-            <td>${r.sales}</td>
-            <td>${r.expenses}</td>
-            <td>${r.profit}</td>
-            <td><button onclick="deleteRecord(${i})">Delete</button></td>
-        `;
-        tbody.appendChild(tr);
-    });
+records.push({
+date,
+sales,
+expenses,
+profit,
+currency
+});
 
-    document.getElementById("totals").innerText =
-        `Sales: ${totalSales} | Expenditure: ${totalExpenses} | Profit: ${totalProfit}`;
-}
-
-// Initial render
+saveLocal();
 renderRecords();
+
+/* Clear inputs */
+
+document.getElementById("date").value="";
+document.getElementById("sales").value="";
+document.getElementById("expenses").value="";
+
+}
+
+/* DELETE RECORD */
+
+function deleteRecord(index){
+
+if(!confirm("Delete this record?")) return;
+
+records.splice(index,1);
+
+saveLocal();
+
+renderRecords();
+
+}
+
+/* RENDER TABLE */
+
+function renderRecords(){
+
+let tbody=document.querySelector("#recordsTable tbody");
+
+tbody.innerHTML="";
+
+let totalSales=0;
+let totalExpenses=0;
+let totalProfit=0;
+let currencySymbol="";
+
+records.forEach((r,i)=>{
+
+totalSales+=r.sales;
+totalExpenses+=r.expenses;
+totalProfit+=r.profit;
+
+currencySymbol=r.currency;
+
+let tr=document.createElement("tr");
+
+tr.innerHTML=`
+
+<td>${r.date}</td>
+<td>${r.currency}</td>
+<td>${r.currency} ${r.sales}</td>
+<td>${r.currency} ${r.expenses}</td>
+<td>${r.currency} ${r.profit}</td>
+<td><button onclick="deleteRecord(${i})">Delete</button></td>
+
+`;
+
+tbody.appendChild(tr);
+
+});
+
+document.getElementById("totals").innerText=
+
+`Sales: ${currencySymbol} ${totalSales} | Expenditure: ${currencySymbol} ${totalExpenses} | Profit: ${currencySymbol} ${totalProfit}`;
+
+}
+
+/* INITIAL LOAD */
+
+renderRecords();
+
 </script>
 
 </body>
